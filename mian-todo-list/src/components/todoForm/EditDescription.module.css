@@ -1,0 +1,39 @@
+.editBlock {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   margin-top: 2rem;
+}
+
+.editArea {
+   width: 100%;
+   min-width: 300px;
+   max-width: 600px;
+   min-height: 80px;
+   font-size: 1rem;
+   padding: 10px;
+   border-radius: 8px;
+   resize: none;
+   box-sizing: border-box;
+   background: rgb(201, 221, 233);
+}
+
+.editBtns {
+   margin-top: 1rem;
+   display: flex;
+   gap: 3rem;
+}
+
+.editBtns button {
+   padding: .6rem;
+   font-size: 14px;
+   border-radius: 10px;
+   background: #bddbba;
+   cursor: pointer;
+   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.70);
+   transition: .3s;
+}
+
+.editBtns button:hover {
+   background: #7cc475;
+}

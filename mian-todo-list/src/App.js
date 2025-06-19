@@ -1,36 +1,40 @@
 import './App.css';
 import LoginForm from "./components/loginForm/LoginForm";
-import Header from "./components/header/Header";
-import { useState } from 'react';
+import UserRegister from './components/loginForm/UserRegister';
 import TodoForm from './components/todoForm/TodoForm';
+import { useState } from 'react';
 
 const App = () => {
-  const [isLogin, setIsLogin] = useState(false);
   const [users, setUsers] = useState([]);
+  const [showLogin, setShowLogin] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const addUserHandler = (user) => {
     setUsers(prev => [...prev, user]);
+    setShowLogin(true);
   };
 
-  const loginHandler = () => {
-    if (isLogin) {
-      setIsLogin(false);
+  const handleLogin = (user) => {
+    setCurrentUser(user);
+    setIsLoggedIn(true);
+  };
+
+  const isShowLogin = () => {
+    if (!showLogin) {
+      setShowLogin(true);
       return;
     }
-    setIsLogin(true);
+    setShowLogin(false);
   };
 
   return (
-    <div className="App">
-      <Header />
-      <TodoForm onAddUser={addUserHandler} />
-      <ul>
-        {users.map((u, i) => (
-          <li key={i}>{u.name}</li>
-        ))}
-      </ul>
-      {/* {isLogin && <Header logOut={loginHandler} />} */}
-      {/* {!isLogin && <LoginForm onLogin={loginHandler} />} */}
+    <div>
+      {isLoggedIn && <TodoForm user={currentUser} />}
+      {!isLoggedIn && (showLogin
+        ? <LoginForm users={users} onShowRegister={isShowLogin} onLogin={handleLogin} />
+        : <UserRegister onRegister={addUserHandler} onShowRegister={isShowLogin} />
+      )}
     </div>
   );
 };

@@ -1,25 +1,27 @@
-// import { useState } from "react";
+import classes from './TodoCard.module.css';
 
-// const TodoCard = ({ onAddUser }) => {
-//    const [name, setName] = useState("");
+const MAX_LENGTH = 40;
 
-//    const handleAdd = () => {
-//       if (!name.trim()) return;
-//       onAddUser({ name });
-//       setName("");
-//    };
+const TodoCard = ({ name, description, onMore }) => {
+   const shortDesc = description.length > MAX_LENGTH ? description.slice(0, MAX_LENGTH) + "..."
+      : description;
 
-//    return (
-//       <div>
-//          <input
-//             type="text"
-//             value={name}
-//             onChange={e => setName(e.target.value)}
-//             placeholder="Имя пользователя"
-//          />
-//          <button onClick={handleAdd}>Добавить пользователя</button>
-//       </div>
-//    );
-// };
+   return (
+      <div className={classes.cardBlock}>
+         <div className={classes.card}>
+            <p>Имя: {name}</p>
+            <p className={classes.desc}>
+               Описание: {shortDesc}
+               {description.length > MAX_LENGTH && (
+                  <button className={classes.moreBtn} onClick={onMore}>
+                     ещё
+                  </button>
+               )}
+            </p>
+         </div>
+      </div>
+   );
+};
 
-// export default TodoCard;
+export default TodoCard;
+

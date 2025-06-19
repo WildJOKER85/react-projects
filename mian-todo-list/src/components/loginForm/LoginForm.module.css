@@ -23,10 +23,11 @@
 .inp-block input[type="password"] {
    display: block;
    width: 300px;
-   height: 35px;
    margin-bottom: 20px;
    border-radius: 10px;
    border: 1px solid green;
+   padding: 8px 5px;
+   font-size: 18px;
 }
 
 .inp-block input[type="date"] {
@@ -35,20 +36,31 @@
    margin-bottom: 15px;
 }
 
-.btn {
+.btns {
+   width: 300px;
+   display: flex;
+   justify-content: space-between;
+}
+
+.btns button {
    cursor: pointer;
-   font-size: 20px;
-   letter-spacing: 5px;
+   font-size: 18px;
    font-weight: bold;
    border-radius: 10px;
-   padding: 7px 75px;
+   padding: 7px 10px;
    background: rgb(46, 231, 87);
    border: 1px solid rgb(128, 128, 209);
    transition: .3s;
 }
 
-.btn:hover {
+.btns button:hover {
    background: rgb(91, 233, 122);
    border: 1px solid rgb(117, 124, 185);
-   color: rgb(112, 110, 110);
+   color: rgb(78, 78, 78);
+}
+
+.errMessage {
+   color: red;
+   margin-bottom: 10px;
+   font-size: 18px;
 }

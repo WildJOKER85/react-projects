@@ -1,23 +1,14 @@
 import classes from './Header.module.css';
-import TodoForm from '../todoForm/TodoForm';
-import TodoCard from '../todoForm/TodoCard';
-import { useState } from 'react';
 
-const Header = (props) => {
-   const [user, setUser] = useState([]);
-
-   const logOut = () => {
-      props.logOut();
-   }
-
+const Header = ({ user }) => {
    return (
-      <>
-         <header>
-            <h1>Todo List</h1>
-            <button onClick={logOut}>На главную</button>
-         </header>
-         <TodoForm />
-      </>
+      <header className={classes.header}>
+         <h1>Todo List</h1>
+         <h2>
+            Привет, {user.userName} {user.userSurName}!
+         </h2>
+         <button>Выйти</button>
+      </header>
    );
 };
 
