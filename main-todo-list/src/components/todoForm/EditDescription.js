@@ -1,25 +1,30 @@
 import classes from './EditDescription.module.css';
 import { useState, useEffect, useRef } from 'react';
 
-const EditDescription = ({ description, onSave, onCancel }) => {
-   const [value, setValue] = useState(description);
+const EditDescription = ({ onSave, todo, onCancel }) => {
+   const [value, setValue] = useState(todo.description || "");
    const textareaRef = useRef(null);
 
-   const adjustHeight = () => {
+   useEffect(() => {
       const el = textareaRef.current;
-      if (!el) return;
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
-   };
+      if (el) {
+         el.style.height = 'auto';
+         el.style.height = el.scrollHeight + 'px';
+      }
+   }, [value]);
 
    const handleInput = (e) => {
       setValue(e.target.value);
-      adjustHeight();
    };
 
-   useEffect(() => {
-      adjustHeight();
-   }, [value]);
+   const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+         onCancel();
+      }
+      if (e.key === 'Enter' && e.ctrlKey) {
+         onSave(value);
+      }
+   };
 
    return (
       <div className={classes.editBlock}>
@@ -27,6 +32,7 @@ const EditDescription = ({ description, onSave, onCancel }) => {
             ref={textareaRef}
             value={value}
             onChange={handleInput}
+            onKeyDown={handleKeyDown}
             className={classes.editArea}
             style={{ width: '100%', minHeight: '140px', resize: 'none' }}
             autoFocus

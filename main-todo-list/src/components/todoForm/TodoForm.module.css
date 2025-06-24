@@ -99,3 +99,15 @@
    justify-content: center;
    gap: 12px;
 }
+
+.error {
+   color: #b80000;
+   background: #ffeaea;
+   padding: 10px 16px;
+   border-radius: 12px;
+   margin: 20px auto;
+   max-width: 600px;
+   text-align: center;
+   font-weight: 500;
+   font-size: 16px;
+}

@@ -1,92 +1,54 @@
 import classes from './UserRegister.module.css';
-import { useState } from "react";
-import bcrypt from "bcryptjs";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../../store/auth-slice';
 
-const UserRegister = ({ onRegister, onShowRegister }) => {
+const UserRegister = ({ onShowRegister }) => {
+   const dispatch = useDispatch();
+   const { error, isLoading, registered } = useSelector(state => state.auth);
+
    const [login, setLogin] = useState("");
    const [password, setPassword] = useState("");
    const [confirmPassword, setConfirmPassword] = useState("");
    const [userName, setUserName] = useState("");
    const [userSurName, setUserSurName] = useState("");
    const [userDate, setUserDate] = useState("");
-   const [error, setError] = useState("");
+   const [localError, setLocalError] = useState("");
 
    const handleRegister = async (e) => {
       e.preventDefault();
 
-      if (
-         login.trim() === "" ||
-         password.trim() === "" ||
-         userName.trim() === "" ||
-         userSurName.trim() === "" ||
-         userDate.trim() === ""
-      ) {
-         setError("Пожалуйста, заполните все поля!");
+      if (!login || !password || !confirmPassword || !userName || !userSurName || !userDate) {
+         setLocalError("Пожалуйста, заполните все поля!");
          return;
       }
+
       if (password.length < 6) {
-         setError("Пароль должен быть не менее 6 символов!");
+         setLocalError("Пароль должен быть не менее 6 символов!");
          return;
       }
+
       if (password !== confirmPassword) {
-         setError("Пароли не совпадают!");
+         setLocalError("Пароли не совпадают!");
          return;
       }
-      setError('');
 
-      try {
-         const response = await fetch("https://todo-list-cf8bc-default-rtdb.firebaseio.com/users.json");
-         if (!response.ok) throw new Error("Ошибка при проверке пользователей!");
-
-         const data = await response.json();
-         const users = Object.values(data || {});
-
-         const isExist = users.some(u => u.name.trim().toLowerCase() === login.trim().toLowerCase());
-         if (isExist) {
-            setError("Такой логин уже зарегистрирован, выберите другое имя!");
-            return;
-         }
-
-         const salt = bcrypt.genSaltSync(10);
-         const hashedPassword = bcrypt.hashSync(password, salt);
-
-         const saveResponse = await fetch("https://todo-list-cf8bc-default-rtdb.firebaseio.com/users.json", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-               name: login,
-               hashedPassword,
-               userName,
-               userSurName,
-               userDate
-            }),
-         });
-
-         if (!saveResponse.ok) throw new Error("Ошибка при сохранении пользователя!");
-
-         setLogin('');
-         setPassword('');
-         setConfirmPassword('');
-         setUserName('');
-         setUserSurName('');
-         setUserDate('');
-         setError('');
-
-         onRegister && onRegister({
-            login,
-            userName,
-            userSurName,
-            userDate,
-         });
-
-      } catch (err) {
-         setError("Ошибка при регистрации!");
-      }
+      setLocalError("");
+      dispatch(registerUser({ login, password, userName, userSurName, userDate }));
    };
+
+   // Если успешно зарегистрирован — возвращаемся к логину
+   useEffect(() => {
+      if (registered) {
+         onShowRegister(); // вернуться к логину
+      }
+   }, [registered, onShowRegister]);
 
    return (
       <form onSubmit={handleRegister} className={classes.formBlock}>
-         {error && <div className={classes.err}>{error}</div>}
+         {(error || localError) && (
+            <div className={classes.err}>{error || localError}</div>
+         )}
          <input
             type="text"
             value={login}
@@ -109,7 +71,7 @@ const UserRegister = ({ onRegister, onShowRegister }) => {
             type="text"
             value={userName}
             onChange={e => setUserName(e.target.value)}
-            placeholder="Ваша имя"
+            placeholder="Ваше имя"
          />
          <input
             type="text"
@@ -121,14 +83,16 @@ const UserRegister = ({ onRegister, onShowRegister }) => {
             type="date"
             value={userDate}
             onChange={e => setUserDate(e.target.value)}
-            placeholder="Ваша дата рождения"
          />
          <div className={classes.btns}>
             <button type="button" onClick={onShowRegister}>Назад</button>
-            <button type="submit">Зарегистрироваться</button>
+            <button type="submit" disabled={isLoading}>
+               {isLoading ? 'Регистрируем...' : 'Зарегистрироваться'}
+            </button>
          </div>
       </form>
    );
 };
 
 export default UserRegister;
+
