@@ -1,8 +1,8 @@
 import classes from './TodoForm.module.css';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchTodos, addTodo, deleteTodo } from '../../store/todo-slice';
-import moment from 'moment';
+import { addTodo, deleteTodo } from '../../store/todo-slice';
+// import moment from 'moment';
 import 'moment/locale/ru';
 import Header from '../header/Header';
 import TodoCard from './TodoCard';
@@ -18,15 +18,9 @@ const TodoForm = ({ user, onLogOut, onEditTodo }) => {
       dispatch(deleteTodo({ id, userId: user.key }));
    };
 
-   useEffect(() => {
-      if (user?.key) {
-         dispatch(fetchTodos(user.key));
-      }
-   }, [user, dispatch]);
-
    const submitHandler = (e) => {
       e.preventDefault();
-      if (!inputValue.trim()) return;
+      if (!inputValue.trim() && !areaValue.trim()) return;
 
       const now = Date.now();
       dispatch(addTodo({
@@ -44,10 +38,10 @@ const TodoForm = ({ user, onLogOut, onEditTodo }) => {
       setAreaValue('');
    };
 
-   const formatTime = (timestamp) => {
-      moment.locale('ru');
-      return moment(timestamp).fromNow();
-   };
+   // const formatTime = (timestamp) => {
+   //    moment.locale('ru');
+   //    return moment(timestamp).fromNow();
+   // };
 
    return (
       <>
@@ -76,7 +70,9 @@ const TodoForm = ({ user, onLogOut, onEditTodo }) => {
             </div>
          </form>
 
-         {todos.length === 0 ? (
+         {loading ? (
+            <div className={classes.zero}>Загрузка задач...</div>
+         ) : !todos || todos.length === 0 ? (
             <div className={classes.zero}>Пока нет ни одной Todos</div>
          ) : (
             todos.map(todo => (

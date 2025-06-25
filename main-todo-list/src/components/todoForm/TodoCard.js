@@ -3,14 +3,14 @@ import { FaTrashAlt, FaEdit } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { deleteTodo } from '../../store/todo-slice';
 import moment from 'moment';
-import 'moment/locale/ru';
 
 const MAX_LENGTH = 60;
 
 const TodoCard = ({ todo, onMore }) => {
    const dispatch = useDispatch();
 
-   const formattedTime = moment(todo.updateTime).fromNow();
+   moment.locale('ru');
+   const formattedTime = moment(todo.updateTime).format('LLL');
 
    const shortDesc = todo.description?.length > MAX_LENGTH
       ? todo.description.slice(0, MAX_LENGTH) + "..."

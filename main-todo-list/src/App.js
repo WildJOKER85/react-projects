@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setUser, logout, setAuthChecked } from './store/auth-slice';
 import { updateTodo, fetchTodos } from './store/todo-slice';
+
 import TodoForm from './components/todoForm/TodoForm';
 import LoginForm from './components/loginForm/LoginForm';
 import UserRegister from './components/loginForm/UserRegister';
@@ -12,89 +13,103 @@ const App = () => {
   const { isLoggedIn, isLoading, user, isAuthChecked } = useSelector(state => state.auth);
   const { items: todos, loading: todosLoading } = useSelector(state => state.todo);
 
-  // Состояние редактируемой задачи - с сохранением в localStorage
-  const [editingTodoId, setEditingTodoId] = useState(() => localStorage.getItem('editingTodoId') || null);
-  const [showLogin, setShowLogin] = useState(true);
+  // Читаем из localStorage, чтобы определить, показывать форму логина или регистрации
+  const [showLogin, setShowLogin] = useState(() => {
+    const saved = localStorage.getItem('showLogin');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
-  // При изменении editingTodoId - синхронизируем с localStorage
+  const [editingTodoId, setEditingTodoId] = useState(null);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+
   useEffect(() => {
-    if (editingTodoId) {
-      localStorage.setItem('editingTodoId', editingTodoId);
-    } else {
-      localStorage.removeItem('editingTodoId');
+    localStorage.setItem('showLogin', JSON.stringify(showLogin));
+  }, [showLogin]);
+
+  useEffect(() => {
+    const loginKey = localStorage.getItem('login');
+    const savedEditId = localStorage.getItem('editingTodoId');
+
+    if (!loginKey) {
+      dispatch(setAuthChecked(true));
+      setInitialLoadComplete(true);
+      return;
     }
-  }, [editingTodoId]);
 
-  // Загрузка пользователя из localStorage + установка isAuthChecked
-  useEffect(() => {
-    const loadUser = async () => {
-      const loginKey = localStorage.getItem('login');
-      if (!loginKey) {
-        dispatch(setAuthChecked(true));
-        return;
-      }
+    const fetchUserAndTodos = async () => {
       try {
         const res = await fetch(`https://todo-list-cf8bc-default-rtdb.firebaseio.com/users/${loginKey}.json`);
         const data = await res.json();
         if (data) {
           dispatch(setUser({ ...data, key: loginKey }));
+          await dispatch(fetchTodos(loginKey)); // ждём загрузки
+          if (savedEditId) setEditingTodoId(savedEditId);
         }
-      } catch (err) {
-        console.error(err);
+      } catch (error) {
+        console.error("Ошибка при загрузке пользователя:", error);
       } finally {
         dispatch(setAuthChecked(true));
+        setInitialLoadComplete(true);
       }
     };
-    loadUser();
+
+    fetchUserAndTodos();
   }, [dispatch]);
-
-  // После загрузки пользователя - загружаем todos
-  useEffect(() => {
-    if (user?.key) {
-      dispatch(fetchTodos(user.key));
-    }
-  }, [user, dispatch]);
-
-  // Если редактируемой задачи нет в списке (например, удалили), сбрасываем editingTodoId
-  useEffect(() => {
-    if (!todosLoading && editingTodoId && !todos.find(t => t.id === editingTodoId)) {
-      setEditingTodoId(null);
-    }
-  }, [todos, editingTodoId, todosLoading]);
-
-  const editingTodo = todos.find(t => t.id === editingTodoId);
-
-  if (!isAuthChecked) return <div>Загрузка...</div>;
 
   const toggleLoginForm = () => setShowLogin(prev => !prev);
 
+  const handleEditTodo = (id) => {
+    setEditingTodoId(id);
+    localStorage.setItem('editingTodoId', id);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTodoId(null);
+    localStorage.removeItem('editingTodoId');
+  };
+
+  const handleSaveEdit = async (newDesc) => {
+    const todo = todos.find(t => t.id === editingTodoId);
+    if (!todo) return;
+
+    await dispatch(updateTodo({
+      userId: user.key,
+      id: todo.id,
+      updates: {
+        ...todo,
+        description: newDesc,
+        updateTime: Date.now()
+      }
+    }));
+
+    handleCancelEdit();
+  };
+
+  if (!isAuthChecked || !initialLoadComplete) {
+    return <div style={{ padding: 20 }}>Загрузка...</div>;
+  }
+
+  const editingTodo = todos.find(t => t.id === editingTodoId);
+
   return (
     <div>
-      {isLoading ? (
-        <div>Загрузка...</div>
+      {isLoading || (isLoggedIn && todosLoading) ? (
+        <div style={{ padding: 20 }}>Загрузка задач...</div>
       ) : isLoggedIn ? (
         editingTodoId && editingTodo ? (
           <EditDescription
             todo={editingTodo}
-            onSave={async (newDesc) => {
-              await dispatch(updateTodo({
-                userId: user.key,
-                id: editingTodo.id,
-                updates: {
-                  ...editingTodo,
-                  description: newDesc,
-                  updateTime: Date.now()
-                }
-              }));
-              setEditingTodoId(null);
-            }}
-            onCancel={() => setEditingTodoId(null)}
+            onSave={handleSaveEdit}
+            onCancel={handleCancelEdit}
           />
         ) : (
           <TodoForm
             user={user}
-            onLogOut={() => dispatch(logout())}
-            onEditTodo={setEditingTodoId} // передаём в карточку функцию, которая ставит id
+            onLogOut={() => {
+              dispatch(logout());
+              localStorage.removeItem('editingTodoId');
+            }}
+            onEditTodo={handleEditTodo}
           />
         )
       ) : (
