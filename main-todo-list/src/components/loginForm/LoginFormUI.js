@@ -1,21 +1,17 @@
 import classes from './LoginForm.module.css';
-import { useState } from "react";
-import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, clearError } from '../../store/auth-slice';
 
-const LoginForm = ({ onShowRegister }) => {
-   const dispatch = useDispatch();
-   const [login, setLogin] = useState("");
-   const [password, setPassword] = useState("");
-   const { error, isLoading } = useSelector(state => state.auth);
-
-   const handleSubmit = (e) => {
-      e.preventDefault();
-      dispatch(loginUser({ login, password }));
-   };
-
+const LoginFormUI = ({
+   login,
+   password,
+   onChangeLogin,
+   onChangePassword,
+   onSubmit,
+   onGoToRegister,
+   isLoading,
+   error
+}) => {
    return (
-      <form className={classes.form} onSubmit={handleSubmit}>
+      <form className={classes.form} onSubmit={onSubmit}>
          <div className={classes.block}>
             <div className={classes['inp-block']}>
                <label htmlFor="login">Логин</label>
@@ -23,7 +19,7 @@ const LoginForm = ({ onShowRegister }) => {
                   id="login"
                   type="text"
                   value={login}
-                  onChange={e => setLogin(e.target.value)}
+                  onChange={onChangeLogin}
                />
             </div>
             <div className={classes['inp-block']}>
@@ -32,17 +28,17 @@ const LoginForm = ({ onShowRegister }) => {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={onChangePassword}
                />
             </div>
+
             {error && <div className={classes.errMessage}>{error}</div>}
+
             <div className={classes.btns}>
                <button type="submit" disabled={isLoading}>
                   {isLoading ? 'Вход...' : 'Войти'}
                </button>
-               <button type="button" onClick={() => {
-                  onShowRegister(); dispatch(clearError())
-               }}>
+               <button type="button" onClick={onGoToRegister}>
                   Регистрация
                </button>
             </div>
@@ -51,5 +47,4 @@ const LoginForm = ({ onShowRegister }) => {
    );
 };
 
-export default LoginForm;
-
+export default LoginFormUI;

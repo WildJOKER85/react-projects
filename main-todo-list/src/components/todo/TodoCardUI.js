@@ -1,14 +1,10 @@
 import classes from './TodoCard.module.css';
 import { FaTrashAlt, FaEdit } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
-import { deleteTodo } from '../../store/todo-slice';
 import moment from 'moment';
 
 const MAX_LENGTH = 60;
 
-const TodoCard = ({ todo, onMore }) => {
-   const dispatch = useDispatch();
-
+const TodoCardUI = ({ todo, onDelete, onEdit }) => {
    moment.locale('ru');
    const formattedTime = moment(todo.updateTime).format('LLL');
 
@@ -20,7 +16,7 @@ const TodoCard = ({ todo, onMore }) => {
       <div className={classes.card}>
          <div className={classes.header}>
             <div className={classes.name}>{todo.name}</div>
-            <button className={classes.deleteBtn} onClick={() => dispatch(deleteTodo({ id: todo.id, userId: todo.userId }))}>
+            <button className={classes.deleteBtn} onClick={onDelete}>
                <FaTrashAlt />
             </button>
          </div>
@@ -34,7 +30,7 @@ const TodoCard = ({ todo, onMore }) => {
                {formattedTime}
                <span className={classes.timeIcon}>🕓</span>
             </span>
-            <button className={classes.editBtn} onClick={() => onMore(todo)} title="Редактировать">
+            <button className={classes.editBtn} onClick={onEdit} title="Редактировать">
                <FaEdit />
             </button>
          </div>
@@ -42,4 +38,4 @@ const TodoCard = ({ todo, onMore }) => {
    );
 };
 
-export default TodoCard;
+export default TodoCardUI;

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import bcrypt from 'bcryptjs';
+import { fetchTodos } from './todo-slice';
 
 // --- Асинхронная авторизация пользователя
 export const loginUser = createAsyncThunk(
@@ -16,10 +17,15 @@ export const loginUser = createAsyncThunk(
                user.name.trim().toLowerCase() === login.trim().toLowerCase() &&
                bcrypt.compareSync(password, user.hashedPassword)
             ) {
-               localStorage.setItem('login', key);
+               sessionStorage.setItem('login', key);
+
+               // Загружаем задачи сразу после логина
+               thunkAPI.dispatch(fetchTodos(key));
+
                return { ...user, key };
             }
          }
+
          return thunkAPI.rejectWithValue("Неверный логин или пароль");
       } catch {
          return thunkAPI.rejectWithValue("Ошибка при входе");
@@ -27,7 +33,6 @@ export const loginUser = createAsyncThunk(
    }
 );
 
-// --- Асинхронная регистрация пользователя
 export const registerUser = createAsyncThunk(
    'auth/registerUser',
    async (newUserData, thunkAPI) => {
@@ -59,7 +64,7 @@ export const registerUser = createAsyncThunk(
             })
          });
 
-         return true; // можно вернуть больше инфо, если нужно
+         return true;
       } catch {
          return thunkAPI.rejectWithValue("Ошибка при регистрации");
       }
@@ -81,7 +86,7 @@ const authSlice = createSlice({
       logout(state) {
          state.user = null;
          state.isLoggedIn = false;
-         localStorage.removeItem('login');
+         sessionStorage.removeItem('login'); // ← этот ключ должен исчезнуть
       },
       setUser(state, action) {
          state.user = action.payload;

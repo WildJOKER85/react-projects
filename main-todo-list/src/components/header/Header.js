@@ -1,9 +1,6 @@
 import classes from './Header.module.css';
 
 const Header = ({ user, onLogOut }) => {
-   const handleLogout = () => {
-      onLogOut();
-   };
 
    return (
       <header className={classes.header}>
@@ -18,7 +15,7 @@ const Header = ({ user, onLogOut }) => {
          </div>
 
          <div className={classes.right}>
-            <button className={classes.logoutBtn} onClick={handleLogout}>
+            <button className={classes.logoutBtn} onClick={onLogOut}>
                Выйти
             </button>
          </div>
